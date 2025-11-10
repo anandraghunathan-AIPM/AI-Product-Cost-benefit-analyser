@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProcessGenius AI: CBA Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #212529;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 25px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        h1, h2 {
+            color: #0d6efd;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h1 {
+            text-align: center;
+            color: #212529;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #dee2e6;
+            padding: 12px 15px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f1f3f5;
+            font-weight: 600;
+        }
+        /* Value column */
+        td:nth-child(3) { 
+            text-align: right;
+            font-weight: 500;
+            min-width: 100px;
+        }
+         /* Unit column */
+        td:nth-child(4) {
+            text-align: left;
+            font-style: italic;
+            color: #6c757d;
+        }
+        input[type="number"], input[type="text"] {
+            width: 90%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        input[type="number"] {
+             text-align: right;
+        }
+        .notes {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        .output-value {
+            font-weight: bold;
+            text-align: right;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: #f1f3f5;
+        }
+        .summary-metric {
+            font-weight: bold;
+            color: #0d6efd;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        /* Styles for new nested table and buttons */
+        .nested-table {
+            width: 100%;
+            margin: 5px 0;
+        }
+        .nested-table th {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        .nested-table td {
+            border: none;
+            border-bottom: 1px solid #dee2e6;
+            padding: 8px;
+        }
+        .nested-table input[type="text"] {
+            width: 95%;
+        }
+        .nested-table input[type="number"] {
+            width: 85%;
+        }
+        .nested-table .action-cell {
+            text-align: center;
+            width: 80px;
+        }
+        .btn {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-add {
+            background-color: #0d6efd;
+            color: white;
+            display: block;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body onload="calculateCBA()">
+
+    <div class="container">
+        <h1>ProcessGenius AI: CBA Calculator (4-Month Pilot)</h1>
+        <p>This interactive tool models the financial viability of the ProcessGenius AI 4-month pilot. Adjust the assumptions below to see how costs, benefits, and key financial metrics change in real-time.</p>
+
+        <h2>1. Assumptions & Inputs</h2>
+        <p>Modify the values in the "Value" column to explore different scenarios. All subsequent calculations will update automatically based on the logic from the CBA document.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Item</th>
+                    <th>Value</th>
+                    <th>Unit</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Time Horizon</td>
+                    <td>Analysis Period</td>
+                    <td><input type="number" id="in-analysisPeriod" value="4" oninput="calculateCBA()"></td>
+                    <td>Months</td>
+                    <td class="notes">Period for the pilot project.</td>
+                </tr>
+                
+                <tr>
+                    <td>Pilot Team</td>
+                    <td colspan="4">
+                        <table class="nested-table">
+                            <thead>
+                                <tr>
+                                    <th>Role / Member</th>
+                                    <th>Monthly Cost ($)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pilot-team-list">
+                                <tr>
+                                    <td><input type="text" value="Project Manager"></td>
+                                    <td><input type="number" class="team-cost" value="25000" oninput="calculateCBA()"></td>
+                                    <td class="action-cell"><button class="btn btn-delete" onclick="deleteRow(this)">Delete</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" value="AI/ML Engineer 1"></td>
+                                    <td><input type="number" class="team-cost" value="25000" oninput="calculateCBA()"></td>
+                                    <td class="action-cell"><button class="btn btn-delete" onclick="deleteRow(this)">Delete</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" value="AI/ML Engineer 2"></td>
+                                    <td><input type="number" class="team-cost" value="25000" oninput="calculateCBA()"></td>
+                                    <td class="action-cell"><button class="btn btn-delete" onclick="deleteRow(this)">Delete</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" value="UX Designer"></td>
+                                    <td><input type="number" class="team-cost" value="25000" oninput="calculateCBA()"></td>
+                                    <td class="action-cell"><button class="btn btn-delete" onclick="deleteRow(this)">Delete</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" value="Sr. BA (SME)"></td>
+                                    <td><input type="number" class="team-cost" value="25000" oninput="calculateCBA()"></td>
+                                    <td class="action-cell"><button class="btn btn-delete" onclick="deleteRow(this)">Delete</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button class="btn btn-add" onclick="addTeamMember()">+ Add Team Member</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Axiom BAs</td>
+                    <td>Loaded BA Cost (Axiom)</td>
+                    <td><input type="number" id="in-baLoadedCost" value="150" oninput="calculateCBA()"></td>
+                    <td>$/Hour</td>
+                    <td class="notes">Axiom's internal cost for a BA.</td>
+                </tr>
+                <tr>
+                    <td>Axiom BAs</td>
+                    <td>Number of Pilot Clients</td>
+                    <td><input type="number" id="in-pilotClients" value="3" oninput="calculateCBA()"></td>
+                    <td>Clients</td>
+                    <td class="notes">Pilot involves 3 finance clients.</td>
+                </tr>
+                <tr>
+                    <td>Axiom BAs</td>
+                    <td>BA Oversight (HITL)</td>
+                    <td><input type="number" id="in-baOversightHours" value="10" oninput="calculateCBA()"></td>
+                    <td>Hours/Week/Client</td>
+                    <td class="notes">"Absolute human oversight" mandate.</td>
+                </tr>
+                <tr>
+                    <td>Axiom BAs</td>
+                    <td>BAs on Pilot Projects</td>
+                    <td><input type="number" id="in-baStaffed" value="10" oninput="calculateCBA()"></td>
+                    <td>BAs</td>
+                    <td class="notes">Est. Axiom BAs staffed on pilot accounts.</td>
+                </tr>
+                <tr>
+                    <td>Axiom BAs</td>
+                    <td>BA Manual Time (Baseline)</td>
+                    <td><input type="number" id="in-baManualBaseline" value="0.70" step="0.01" oninput="calculateCBA()"></td>
+                    <td>% (Decimal)</td>
+                    <td class="notes">Per caselet: 70% of time on manual docs.</td>
+                </tr>
+                <tr>
+                    <td>Axiom BAs</td>
+                    <td>BA Manual Time (Target)</td>
+                    <td><input type="number" id="in-baManualTarget" value="0.20" step="0.01" oninput="calculateCBA()"></td>
+                    <td>% (Decimal)</td>
+                    <td class="notes">Pilot goal (e.g., 20%).</td>
+                </tr>
+                <tr>
+                    <td>Infrastructure</td>
+                    <td>Monthly Cloud & AI Cost</td>
+                    <td><input type="number" id="in-monthlyInfraCost" value="10000" oninput="calculateCBA()"></td>
+                    <td>$/Month</td>
+                    <td class="notes">Est. for hosting, training, & API calls.</td>
+                </tr>
+                <tr>
+                    <td>Client Value</td>
+                    <td>Client Internal Cost (Est.)</td>
+                    <td><input type="number" id="in-clientInternalCost" value="120" oninput="calculateCBA()"></td>
+                    <td>$/Hour</td>
+                    <td class="notes">Estimated cost of client's own staff.</td>
+                </tr>
+                <tr>
+                    <td>Client Value</td>
+                    <td>Client Audit Prep (Baseline)</td>
+                    <td><input type="number" id="in-clientAuditBaseline" value="2600" oninput="calculateCBA()"></td>
+                    <td>Hours</td>
+                    <td class="notes">Per <KEY_PROBLEM_METRIC_1> (2,000 hrs * 1.3).</td>
+                </tr>
+                <tr>
+                    <td>Client Value</td>
+                    <td>Client Audit Prep (Target)</td>
+                    <td><input type="number" id="in-clientAuditTarget" value="0.40" step="0.01" oninput="calculateCBA()"></td>
+                    <td>% Reduction</td>
+                    <td class="notes">Pilot goal for client-facing value (e.g., 40%).</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>2. Costs Calculation (4-Month Pilot)</h2>
+        <p>This section details the total estimated investment for the pilot.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cost Item</th>
+                    <th>Value (USD)</th>
+                    <th>Calculation Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Pilot Team Development Cost</td>
+                    <td id="out-costDev" class="output-value">$0</td>
+                    <td class="notes">Total Monthly Team Cost * Pilot Months</td>
+                </tr>
+                <tr>
+                    <td>Cloud & AI Services Cost</td>
+                    <td id="out-costInfra" class="output-value">$0</td>
+                    <td class="notes">$10,000/mo * 4 months</td>
+                </tr>
+                <tr>
+                    <td>BA Oversight (HITL) Cost</td>
+                    <td id="out-costOversight" class="output-value">$0</td>
+                    <td class="notes">30 hrs/wk * 16 weeks * $150/hr</td>
+                </tr>
+                <tr class="total-row">
+                    <td>TOTAL PROJECT COSTS</td>
+                    <td id="out-costTotal" class="output-value">$0</td>
+                    <td class="notes">Total investment over the 4-month period.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>3. Benefits Calculation (4-Month Pilot)</h2>
+        <p>This section quantifies the monetary value expected *during* the pilot.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Benefit Item</th>
+                    <th>Value (USD)</th>
+                    <th>Calculation Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Internal Benefit (Axiom): Reclaimed BA Productivity</td>
+                    <td id="out-benefitInternal" class="output-value">$0</td>
+                    <td class="notes">10 BAs * 50% reclaim * 40 hrs/wk * 16 wks * $150/hr</td>
+                </tr>
+                <tr>
+                    <td>Client-Facing Benefit (Value): Value of Client Time Saved</td>
+                    <td id="out-benefitClient" class="output-value">$0</td>
+                    <td class="notes">3 clients * 2,600 hrs * 40% reduction * $120/hr</td>
+                </tr>
+                <tr class="total-row">
+                    <td>TOTAL PROJECTED BENEFITS (Value)</td>
+                    <td id="out-benefitTotal" class="output-value">$0</td>
+                    <td class="notes">Total quantifiable value generated by the pilot.</td>
+                </tr>
+                <tr>
+                    <td>Strategic Benefit (Qualitative)</td>
+                    <td class="output-value" colspan="2">Validates market demand for the "AI maintenance" recurring revenue stream.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>4. Summary Metrics (4-Month Pilot)</h2>
+        <p>These metrics provide a concise overview of the pilot's financial viability, updating as you adjust the inputs.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Interpretation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Net Benefit (Pilot Value)</td>
+                    <td id="out-metricNetBenefit" class="output-value summary-metric">$0</td>
+                    <td class="notes">Positive value indicates total value exceeds pilot investment.</td>
+                </tr>
+                <tr>
+                    <td>Benefit-Cost Ratio (BCR)</td>
+                    <td id="out-metricBCR" class="output-value summary-metric">0.00</td>
+                    <td class="notes">For every $1 invested, $X is returned. (A value > 1 is good).</td>
+                </tr>
+                <tr>
+                    <td>Pilot Payback Period</td>
+                    <td id="out-metricPayback" class="output-value summary-metric">N/A</td>
+                    <td class="notes">Months to recoup the initial investment.</td>
+                </tr>
+                <tr>
+                    <td>Pilot ROI</td>
+                    <td id="out-metricROI" class="output-value summary-metric">0.0%</td>
+                    <td class="notes">The net return on investment for the 4-month period.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <footer>
+        © 2025 Axiom Solutions | ProcessGenius AI CBA Calculator. For internal analysis.
+    </footer>
+
+    <script>
+        // Helper function to get numerical value from an input field
+        function getVal(id) {
+            return parseFloat(document.getElementById(id).value) || 0;
+        }
+
+        // Helper function to format as USD currency
+        function formatCurrency(num) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(num);
+        }
+
+        // --- NEW: Function to add a team member ---
+        function addTeamMember() {
+            const list = document.getElementById('pilot-team-list');
+            const newRow = document.createElement('tr');
+            
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="e.g., AI Engineer"></td>
+                <td><input type="number" class="team-cost" value="25000" oninput="calculateCBA()"></td>
+                <td class="action-cell"><button class="btn btn-delete" onclick="deleteRow(this)">Delete</button></td>
+            `;
+            
+            list.appendChild(newRow);
+            calculateCBA(); // Recalculate after adding
+        }
+
+        // --- NEW: Function to delete a row ---
+        function deleteRow(button) {
+            // Get the <tr> parent of the button and remove it
+            const row = button.parentElement.parentElement;
+            row.remove();
+            calculateCBA(); // Recalculate after deleting
+        }
+
+        // --- Main calculation function (Refactored) ---
+        function calculateCBA() {
+            // --- 1. GET ALL INPUTS ---
+            const analysisPeriod = getVal('in-analysisPeriod');
+            
+            // --- REFACTORED: Get Pilot Team Costs ---
+            let totalMonthlyTeamCost = 0;
+            const costInputs = document.querySelectorAll('.team-cost');
+            costInputs.forEach(input => {
+                totalMonthlyTeamCost += parseFloat(input.value) || 0;
+            });
+            // --- End Refactor ---
+
+            const baLoadedCost = getVal('in-baLoadedCost');
+            const baOversightHours = getVal('in-baOversightHours');
+            const pilotClients = getVal('in-pilotClients');
+            const baStaffed = getVal('in-baStaffed');
+            const baManualBaseline = getVal('in-baManualBaseline');
+            const baManualTarget = getVal('in-baManualTarget');
+            const monthlyInfraCost = getVal('in-monthlyInfraCost');
+            const clientInternalCost = getVal('in-clientInternalCost');
+            const clientAuditBaseline = getVal('in-clientAuditBaseline');
+            const clientAuditTarget = getVal('in-clientAuditTarget');
+
+            // Use the CBA's logic of 4 weeks per month for 16 weeks total
+            const weeksInPeriod = analysisPeriod * 4; 
+            const hoursPerWeek = 40;
+
+            // --- 2. CALCULATE COSTS (as per CBA logic) ---
+            
+            // --- REFACTORED: Pilot Team Development Cost ---
+            const costDev = totalMonthlyTeamCost * analysisPeriod;
+            // --- End Refactor ---
+
+            const costInfra = monthlyInfraCost * analysisPeriod;
+            
+            const totalOversightHours = baOversightHours * pilotClients * weeksInPeriod;
+            const costOversight = totalOversightHours * baLoadedCost;
+            
+            const costTotal = costDev + costInfra + costOversight;
+
+            // --- 3. CALCULATE BENEFITS (as per CBA logic) ---
+            const baTimeReclaimPercent = baManualBaseline - baManualTarget; // e.g., 70% - 20% = 50%
+            const totalReclaimedHours = baStaffed * baTimeReclaimPercent * hoursPerWeek * weeksInPeriod;
+            const benefitInternal = totalReclaimedHours * baLoadedCost;
+            
+            const clientHoursSavedPer = clientAuditBaseline * clientAuditTarget; // e.g., 2600 * 40%
+            const benefitClient = clientHoursSavedPer * pilotClients * clientInternalCost;
+            
+            const benefitTotal = benefitInternal + benefitClient;
+
+            // --- 4. CALCULATE SUMMARY METRICS ---
+            const netBenefit = benefitTotal - costTotal;
+            const bcr = (costTotal > 0) ? (benefitTotal / costTotal) : 0;
+            const roi = (costTotal > 0) ? (netBenefit / costTotal) : 0;
+            
+            let payback = "N/A (Benefits < Costs)";
+            const benefitPerMonth = (analysisPeriod > 0) ? (benefitTotal / analysisPeriod) : 0;
+            if (benefitPerMonth > 0) {
+                const paybackMonths = costTotal / benefitPerMonth;
+                if (paybackMonths > analysisPeriod) {
+                    payback = `> ${analysisPeriod} Months`;
+                } else if (paybackMonths <= 0) {
+                     payback = "Immediate";
+                }
+                else {
+                    payback = `${paybackMonths.toFixed(2)} Months`;
+                }
+            }
+
+            // --- 5. UPDATE THE HTML (OUTPUTS) ---
+            // Costs
+            document.getElementById('out-costDev').innerText = formatCurrency(costDev);
+            document.getElementById('out-costInfra').innerText = formatCurrency(costInfra);
+            document.getElementById('out-costOversight').innerText = formatCurrency(costOversight);
+            document.getElementById('out-costTotal').innerText = formatCurrency(costTotal);
+            
+            // Benefits
+            document.getElementById('out-benefitInternal').innerText = formatCurrency(benefitInternal);
+            document.getElementById('out-benefitClient').innerText = formatCurrency(benefitClient);
+            document.getElementById('out-benefitTotal').innerText = formatCurrency(benefitTotal);
+            
+            // Metrics
+            document.getElementById('out-metricNetBenefit').innerText = formatCurrency(netBenefit);
+            document.getElementById('out-metricBCR').innerText = bcr.toFixed(2);
+            document.getElementById('out-metricPayback').innerText = payback;
+            document.getElementById('out-metricROI').innerText = new Intl.NumberFormat('en-US', {
+                style: 'percent',
+                minimumFractionDigits: 1,
+                maximumFractionDigits: 1
+            }).format(roi);
+        }
+    </script>
+
+</body>
+</html>
